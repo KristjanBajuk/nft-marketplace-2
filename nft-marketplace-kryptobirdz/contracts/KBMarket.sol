@@ -63,7 +63,7 @@
         return listingPrice;
     }
     // create a market item to put it up for sale
-    function mintMarketItem(address nftContract, uint tokenId, uint price) public payable nonReentrant {  // nonReentrant is a modifier to prevent reentry attack
+    function makeMarketItem(address nftContract, uint tokenId, uint price) public payable nonReentrant {  // nonReentrant is a modifier to prevent reentry attack
        
         require(price > 0, 'Price must be at least 1 wei');
         require(msg.value == listingPrice, 'Price must be equal to listing price');

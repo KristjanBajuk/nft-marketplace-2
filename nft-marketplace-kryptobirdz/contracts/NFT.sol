@@ -15,7 +15,7 @@
         contractAddress = marketplaceAddress;
     }
 
-    function mintTokens (string memory tokenURI) public returns (uint) {
+    function mintToken (string memory tokenURI) public returns (uint) {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _mint(msg.sender, newItemId);
