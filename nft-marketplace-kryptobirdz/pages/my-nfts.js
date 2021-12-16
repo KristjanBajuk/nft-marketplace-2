@@ -8,7 +8,8 @@ import { nftaddress, nftmarketaddress } from "../config"
 import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
 import KBMarket from '../artifacts/contracts/KBMarket.sol/KBMarket.json'
 
-const Home = () => {
+const MyAssets = () => {
+  // array of NFTs
   const [nfts, setNfts] = useState([]);
   const [loadingState, setLoadingState] = useState('not-loaded');
 
@@ -17,14 +18,18 @@ const Home = () => {
   }, []);
 
   const loadNFTs = async() => {
-    //provider, tokenContract, marketContract, data for our MarketItems
+    //we want to get the msg.sender hook up to the signer to display the owner nfts
 
-    const provider = new ethers.providers.JsonRpcProvider();
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+
+    const signer = provider.getSigner();
 
     const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
-    const marketContract = new ethers.Contract(nftmarketaddress, KBMarket.abi, provider);
+    const marketContract = new ethers.Contract(nftmarketaddress, KBMarket.abi, signer);
 
-    const data = await marketContract.fetchMarketTokens();
+    const data = await marketContract.fetchMyNFTS();
 
     const items = await Promise.all(data.map( async i => {
       const tokenUri = await tokenContract.tokenURI(i.tokenId);
@@ -50,36 +55,13 @@ const Home = () => {
     setLoadingState('loaded');
   } 
 
-  // function to buy nfts for market
-
-  const buyNFT = async (nft) => {
-  
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-  
-    const provider = new ethers.providers.Web3Provider(connection);
-
-    const signer = provider.getSigner();
-
-    const contract = new ethers.Contract(nftmarketaddress, KBMarket.abi, signer);
- 
-    const price = ethers.utils.parseUnits(nft.price.toString(), 'ether');
-   
-    const transaction = await contract.createMarketSale(nftaddress, nft.tokenId, {
-      value: price
-    });
-
-    await transaction.wait();
-    loadNFTs();
-  }
-
   if (loadingState === 'loaded' && !nfts.length) return (
-    <h1 style={{fontSize: '30px'}} className='px-20 py-7 text-4x1'>No NFTs in marketplace</h1>
+    <h1 style={{fontSize: '30px'}}  className='px-20 py-7 text-4x1'>You do not own any NFTs currently :(</h1>
   )
 
 
   return (
-    <div >
+    <div className='flex justify-center'>
       <div className='px-4' style={{maxWidth: '1600px'}}>
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4'>
           {
@@ -105,4 +87,4 @@ const Home = () => {
   )
 }
 
-export default Home;
+export default MyAssets;
